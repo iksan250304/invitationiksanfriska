@@ -1,0 +1,54 @@
+@keyframes fall{from{transform:translateY(-12vh)}to{transform:translateY(112vh)}}
+@keyframes sway{0%,100%{transform:translateX(calc(var(--sw)*-1)) rotateX(0) rotateY(0) rotateZ(0)}50%{transform:translateX(var(--sw)) rotateX(180deg) rotateY(120deg) rotateZ(90deg)}}
+@keyframes twinkle{0%,100%{opacity:.15;scale:.6}50%{opacity:1;scale:1.2}}
+@keyframes floatBounce{0%,100%{translate:0 0}50%{translate:0 -8px}}
+@keyframes drop{from{translate:0 -30px;opacity:0}}
+@keyframes rise{from{translate:0 60px;opacity:0}}
+@keyframes swing{from{rotate:-2deg}to{rotate:2deg}}
+@keyframes monoIn{from{opacity:0;scale:.3}}
+@keyframes tick{from{opacity:.2;translate:0 -4px}}
+@keyframes spinVinyl{to{transform:rotate(360deg)}}
+@keyframes note{0%{opacity:0;translate:0 0}30%{opacity:1}100%{opacity:0;translate:10px -50px}}
+@keyframes kenburns{from{scale:1}to{scale:1.06}}
+@keyframes bob{0%,100%{translate:0 0}50%{translate:0 -6px}}
+@keyframes wishIn{from{opacity:0;translate:0 -24px}}
+@keyframes toastUp{0%{opacity:0;translate:-50% 16px}12%,80%{opacity:1;translate:-50% 0}100%{opacity:0;translate:-50% -8px}}
+#petals{position:fixed;top:0;left:50%;width:min(100%,480px);height:100%;translate:-50% 0;pointer-events:none;z-index:30;overflow:hidden}
+.petal{position:absolute;top:0;left:var(--x);animation:fall var(--f) linear var(--dl) infinite;will-change:transform}
+.petal i{display:block;width:var(--s);height:calc(var(--s)*1.4);background:var(--c);border-radius:100% 0 100% 0;opacity:.75;animation:sway var(--w) ease-in-out infinite}
+.sp{position:absolute;pointer-events:none;color:var(--blue-powder);animation:twinkle 3s ease-in-out infinite}
+#arrow{animation:floatBounce 1.8s ease-in-out infinite}
+.lamp{animation:swing 5s ease-in-out infinite alternate}
+.p1 .curtain{animation:drop 1.6s var(--ease) both}
+.p1 .lamp{animation:drop 1.6s var(--ease) both,swing 5s ease-in-out 1.6s infinite alternate}
+.p1 .orn{animation:rise 1.8s var(--ease) .4s both}
+.p1 .ml,.p1 .amp{animation:monoIn .9s var(--ease) both}
+.p1 .ml:nth-child(1){animation-delay:.9s}.p1 .amp{animation-delay:1.15s}.p1 .ml:nth-child(3){animation-delay:1.4s}
+.names,.date,.guest{opacity:0;translate:0 24px;transition:opacity 1s var(--ease),translate 1s var(--ease)}
+.p2 .names,.p2 .date,.p3 .names,.p3 .date{opacity:1;translate:0 0}.p2 .date,.p3 .date{transition-delay:.3s}
+.p3 .guest{opacity:1;translate:0 0;transition-delay:.4s}
+.js .rv{opacity:0;translate:0 40px;rotate:var(--rot,0deg);transition:opacity .9s var(--ease),translate .9s var(--ease),scale .9s var(--ease),rotate .9s var(--ease);transition-delay:calc(var(--d,0)*.14s)}
+.js .rv[data-r=scale]{translate:none;scale:.9}
+.js .rv[data-r=l]{translate:-70px 0}.js .rv[data-r=r]{translate:70px 0}
+.js .rv[data-r=w]{translate:none;scale:0 1}
+.js .rv[data-r=pop]{translate:none;scale:.3;transition-timing-function:cubic-bezier(.34,1.56,.64,1)}
+.js .rv[data-r=wax]{translate:none;scale:.5;rotate:-15deg}
+.js .rv.in{opacity:1;translate:0 0;scale:1;rotate:var(--rot,0deg)}
+.cd b.tk{animation:tick .5s var(--ease)}
+.vinyl{animation:spinVinyl 8s linear infinite;animation-play-state:paused}
+.vbox.playing .vinyl{animation-play-state:running}
+.note{visibility:hidden}.vbox.playing .note{visibility:visible;animation:note 3s ease-out infinite}.n2{animation-delay:1s!important}.n3{animation-delay:2s!important}
+.cphoto img{animation:kenburns 12s ease-in-out infinite alternate}
+.see{animation:bob 3s ease-in-out infinite}
+.wish.new{animation:wishIn .6s var(--ease)}
+#toast.on{animation:toastUp 2.5s ease forwards}
+@keyframes swayL{from{rotate:-2.2deg}to{rotate:2.2deg}}
+@keyframes swayR{from{rotate:2.2deg}to{rotate:-2.2deg}}
+@keyframes floatY{from{translate:0 0;scale:1}to{translate:0 -10px;scale:1.02}}
+@keyframes mist{from{translate:-8% 0}to{translate:8% 0}}
+@keyframes fadeUp{from{opacity:0;translate:0 40px}}
+.lay.left,.bgl{animation:swayL 5s ease-in-out infinite alternate}
+.lay.right,.bgr{animation:swayR 6s ease-in-out infinite alternate}
+.lay.house{transform-origin:50% 100%;animation:floatY 4.5s ease-in-out infinite alternate}
+.mist{animation:mist 12s ease-in-out infinite alternate}.m2{animation-duration:17s;animation-direction:alternate-reverse}
+.p1 .scene{animation:fadeUp 2s var(--ease) .2s both}

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Undangan Pernikahan</title>
+<link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Amiri&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css?v=11"><link rel="stylesheet" href="css/animations.css?v=11"><link rel="stylesheet" href="css/extras.css?v=11">
+<script>document.documentElement.classList.add('js','locked')</script></head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="vc" viewBox="0 0 64 64"><path class="f" d="M24 24L9.3 32.5A17 17 0 0 1 32.5 9.3Z"/><path class="r" d="M19.2 25.3L7.6 28.4M19 24L7 24M19.2 22.7L7.6 19.6M19.7 21.5L9.3 15.5M20.5 20.5L12 12M21.5 19.7L15.5 9.3M22.7 19.2L19.6 7.6M24 19V7M25.3 19.2L28.4 7.6"/><path class="s" d="M33 13C41 6 47 17 56 11M13 33C6 41 17 47 11 56"/><circle class="f" cx="57" cy="10" r="3"/><circle class="f" cx="10" cy="57" r="3"/><path class="r" d="M38 11c2 4 6 4 8 2M11 38c4 2 4 6 2 8"/></symbol></defs></svg>
+<div id="bg" aria-hidden="true"><img class="bgl" src="assets/gadang-left.webp" alt=""><img class="bgr" src="assets/gadang-right.webp" alt=""></div>
+<div id="petals" aria-hidden="true"></div><div id="toast" role="status">Disalin ke clipboard.</div>
+<div id="ctl" role="group" aria-label="Kontrol undangan">
+<button id="autoBtn" class="run" type="button" aria-pressed="true" aria-label="Jeda geser otomatis"><svg viewBox="0 0 24 24"><path class="pi i-play" d="M8 5v14l11-7z"/><path class="pi i-pause" d="M7 5h3.5v14H7zM13.5 5H17v14h-3.5z"/></svg></button>
+<button id="muteBtn" type="button" aria-label="Matikan suara musik"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="w" d="M16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11"/><path class="x" d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg></button>
+<button id="fsBtn" type="button" aria-label="Layar penuh"><svg viewBox="0 0 24 24"><path class="exp" d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/><path class="cmp" d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg></button>
+</div>
+<button id="arrow" aria-label="Gulir ke bagian berikutnya">↓</button><audio id="audio" loop preload="none"></audio>
+<main class="app">
+
+<section id="hero">
+<div class="songket"></div>
+<div class="stage">
+ <div class="scene" aria-label="Rumah Gadang"><img class="lay left" src="assets/gadang-left.webp" alt=""><img class="lay house" src="assets/gadang-house.webp" alt=""><img class="lay right" src="assets/gadang-right.webp" alt=""></div><div class="mist m1"></div><div class="mist m2"></div>
+</div>
+<div class="haze"></div>
+<div class="flora" aria-hidden="true">
+ <img class="fl top" src="assets/fl-top.webp" alt=""><img class="fl fern" src="assets/fl-fern.webp" alt=""><img class="fl tulip1" src="assets/fl-tulip1.webp" alt="">
+ <img class="fl right" src="assets/fl-right.webp" alt=""><img class="fl left" src="assets/fl-left.webp" alt=""><img class="fl tulip2" src="assets/fl-tulip2.webp" alt=""><img class="fl bottom" src="assets/fl-bottom.webp" alt=""><img class="fl bottom2" src="assets/fl-bottom-r.webp" alt="">
+</div>
+<div class="lilies" aria-hidden="true"><img class="ly l" src="assets/fl-lily.webp" alt=""><img class="ly r" src="assets/fl-lily.webp" alt=""><img class="ly c" src="assets/fl-lily.webp" alt=""></div>
+<canvas id="fauna" aria-hidden="true"></canvas>
+<img class="curtain" src="assets/orn-curtain.webp" alt="" aria-hidden="true">
+<svg class="lamp l" viewBox="0 0 60 110" aria-hidden="true"><g stroke="#25334E" fill="none"><path d="M30 0V26M30 36C30 50 8 46 8 62M30 36C30 50 52 46 52 62M30 36V64"/><path d="M24 26h12l-3 10h-6z" fill="#25334E"/></g><g fill="#fff" stroke="#AF8741"><ellipse cx="8" cy="66" rx="4" ry="6"/><ellipse cx="52" cy="66" rx="4" ry="6"/><ellipse cx="30" cy="70" rx="4" ry="6"/></g></svg><svg class="lamp r" viewBox="0 0 60 110" aria-hidden="true"><g stroke="#25334E" fill="none"><path d="M30 0V26M30 36C30 50 8 46 8 62M30 36C30 50 52 46 52 62M30 36V64"/><path d="M24 26h12l-3 10h-6z" fill="#25334E"/></g><g fill="#fff" stroke="#AF8741"><ellipse cx="8" cy="66" rx="4" ry="6"/><ellipse cx="52" cy="66" rx="4" ry="6"/><ellipse cx="30" cy="70" rx="4" ry="6"/></g></svg>
+<div class="hero-text">
+ <svg class="logo" viewBox="0 0 646.87 891.9" role="img" aria-label="Logo"><path fill="currentColor" d="M219.2,42.47l-27.72,9.17c-19.02,7.29-23.61,26.86-25.03,45.24l.06,415.82c1.98,19.14,4.85,40.59,24.31,49.47,3.11,1.42,14.37,5,17.25,5h45.09v-210.23c0-1.66-4.48-14.47-5.63-16.63-3.6-6.83-10.01-11.39-16.65-14.97l-25.75-8.8h356.63l26.34,104.24c-22.81-33.73-47.61-59.38-84.29-77.91-29.45-14.88-59.42-17.06-91.92-19.35l-102.53-1.12v245.95c39.8-1.91,84.98,7.69,119.36-17.08,15.46-11.14,27.5-28.95,32.3-47.35,4.78-2.94.6,1.27.6,1.77v134.69c0,.5,4.18,4.71-.6,1.77-7.86-29.92-30.34-54.39-60.56-62.42-2.79-.74-12.32-3.18-14.39-3.18h-76.71v231.31c0,11.05,10.76,27.11,21.03,31.67l30.5,9.91h-158.11l17.86-4.98c15.49-3.53,32.51-20.13,32.51-36.59v-231.31H58.75l23.39-7.65c20.15-7.16,28.04-23.95,29.37-44.41l-.07-433.38c-1.91-16.11-6.55-30.05-21.44-38.29l-30.07-10.34h159.28Z"/></svg>
+ <p class="wedof serif">The Wedding of</p>
+ <h1 class="names script"><span class="n n1" data-n="a"></span><span class="amp">&amp;</span><span class="n n2" data-n="b"></span></h1><div class="date serif" data-t="event.displayDate"></div>
+ <div class="guest"><p>Kepada Yth.<br>Bapak/Ibu/Saudara/i</p><h2 class="serif" id="guest"></h2><button id="open" class="btn">Buka Undangan</button></div></div>
+</section>
+
+<section id="ayat"><div class="card deep dbl rv" data-sp>
+ <img class="crown" src="assets/orn-rose-single.webp" alt="" aria-hidden="true">
+ <div class="ar big rv">بِسْمِ ٱللَّهِ ٱلرَّحْمَٰنِ ٱلرَّحِيمِ</div><i class="dia rv" data-r="w"></i>
+ <p class="ar rv" data-t="verse.arabic"></p><p class="rv tr" data-t="verse.translation"></p><b class="rv src" data-t="verse.source"></b></div></section>
+
+<section id="mempelai" class="hasorn"><img class="so l " src="assets/orn-floral.webp" alt="" aria-hidden="true"><h2 class="script rv">Kedua mempelai.</h2>
+<p class="rv intro">Dengan memohon rahmat dan ridho Allah SWT, kami mengundang Bapak/Ibu/Saudara/i untuk hadir pada pernikahan kami.</p><div id="profiles"></div></section>
+
+<section id="kisah" class="hasorn"><img class="so r rose" src="assets/orn-rose.webp" alt="" aria-hidden="true"><h2 class="script rv">Kisah kami.</h2><div class="card story-card">
+ <div class="wax rv" data-r="wax" id="wax"></div><p class="serif quote rv" data-t="story.quote"></p>
+ <div class="collage"><figure class="polS rv" data-r="l" style="--rot:-3deg"><div class="vf sm"><div class="vf-in"><img id="s1" alt=""></div><svg class="cn tl" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg><svg class="cn tr" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg><svg class="cn bl" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg><svg class="cn br" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg></div></figure><figure class="polS rv" data-r="r" style="--rot:2.5deg"><div class="vf sm"><div class="vf-in"><img id="s2" alt=""></div><svg class="cn tl" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg><svg class="cn tr" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg><svg class="cn bl" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg><svg class="cn br" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg></div></figure></div>
+ <b class="badge rv" data-r="pop" data-t="story.badgeText"></b>
+ <p class="serif story rv drop" data-t="story.paragraph1"></p><p class="serif story rv" data-t="story.paragraph2"></p></div></section>
+
+<section id="acara" class="hasorn"><img class="so r " src="assets/orn-floral.webp" alt="" aria-hidden="true"><h2 class="script rv">Waktu & tempat.</h2><div class="card rv"><div class="evd serif" data-t="event.displayDate"></div>
+ <div class="ev rv" data-r="pop"><span class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="15" r="6"/><path d="M9 4l3-2 3 2-3 4z"/></svg></span><div><b data-t="event.akadTitle"></b><p data-t="event.akadTime"></p></div></div>
+ <div class="ev rv" data-r="pop"><span class="ic"><svg viewBox="0 0 24 24"><path d="M7 3h10l-1 7a4 4 0 0 1-8 0zM12 14v7M8 21h8"/></svg></span><div><b data-t="event.resepsiTitle"></b><p data-t="event.resepsiTime"></p></div></div>
+ <div class="ev rv" data-r="pop"><span class="ic"><svg viewBox="0 0 24 24"><path d="M12 22s7-6.5 7-12a7 7 0 0 0-14 0c0 5.5 7 12 7 12z"/><circle cx="12" cy="10" r="2.5"/></svg></span><div><b data-t="event.venueName"></b><p data-t="event.venueAddress"></p></div></div>
+ <a id="maps" class="btn shim rv" target="_blank" rel="noopener">Petunjuk Arah</a></div>
+ <div class="card deep rv" data-sp style="margin-top:22px"><h3 class="script">Menuju hari bahagia.</h3><div class="cds" id="cds"></div><p id="cdEnd"></p></div></section>
+
+<section id="galeri" class="hasorn"><img class="so l rose" src="assets/orn-rose.webp" alt="" aria-hidden="true"><h2 class="script rv">Kami Berdua.</h2><div class="carousel" id="car"></div></section>
+
+<section id="rsvp" class="hasorn"><h2 class="script rv">Konfirmasi Kehadiran</h2>
+<div class="env-stage" id="env"><div class="env-card"><form id="rsvpForm">
+ <label>Nama<input name="name" id="rName" required maxlength="60"></label>
+ <div class="seg"><label><input type="radio" name="status" value="hadir" checked><span>Hadir</span></label><label><input type="radio" name="status" value="berhalangan"><span>Berhalangan</span></label></div>
+ <label id="paxL">Jumlah tamu<select name="pax"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option></select></label>
+ <button class="btn" type="submit">Kirim Konfirmasi</button><p id="rsvpMsg" role="status"></p></form></div>
+ <div class="envelope"><div class="eb"></div><div class="flap"></div><div class="lace"></div><div class="ef"></div><div class="seal"><span>♥</span></div></div></div></section>
+
+<section id="ucapan" class="hasorn"><img class="so l " src="assets/orn-floral.webp" alt="" aria-hidden="true"><h2 class="script rv">Ucapan & Doa</h2>
+<form id="wishForm" class="notebook rv"><input name="name" id="wName" placeholder="Nama" required maxlength="60"><textarea name="msg" rows="4" placeholder="Tulis ucapan dan doa" required maxlength="400"></textarea><button class="btn" type="submit">Kirim Ucapan</button></form>
+<div id="wishes"></div></section>
+
+<section id="tanda-kasih"><div class="card deep rv" data-sp><h2 class="script">Tanda Kasih</h2><p>Doa restu Anda sudah cukup. Bila ingin berbagi tanda kasih, kirim melalui rekening berikut.</p>
+<div id="banks" class="banks"></div>
+</div></section>
+
+<section id="musik" class="deep" data-sp><h2 class="script">Alunan music.</h2>
+<div class="vbox" id="vbox"><div class="vinyl"><div class="label serif" id="vlabel"></div></div><span class="note n1">♪</span><span class="note n2">♪</span><span class="note n3">♪</span></div>
+<button id="musicBtn" class="btn light">Putar Musik</button>
+<div id="spEmbed" class="spembed" hidden></div></section>
+<div id="ytBox" aria-hidden="true"></div>
+
+<section id="penutup" class="deep"><div class="cphoto"><div class="vf "><div class="vf-in"><img id="cphoto" alt=""></div><svg class="cn tl" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg><svg class="cn tr" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg><svg class="cn bl" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg><svg class="cn br" viewBox="0 0 64 64" aria-hidden="true"><use href="#vc"/></svg></div><b class="see">See you there!</b></div>
+<div class="cbody"><p class="serif cq" data-t="closing.quote"></p><h3 class="script" data-names></h3>
+<div class="soc"><a id="ig" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/></svg></a><a id="tt" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M14 3v11a4 4 0 1 1-4-4M14 3c0 3 2 5 5 5"/></svg></a></div>
+<small>Terima kasih atas doa dan kehadiran Anda.</small></div></section>
+</main>
+<script defer src="js/config.js?v=11"></script><script defer src="js/store.js?v=11"></script><script defer src="js/app.js?v=11"></script><script defer src="js/fauna.js?v=11"></script>
+</body></html>
