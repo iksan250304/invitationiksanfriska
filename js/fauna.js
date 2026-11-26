@@ -2,12 +2,12 @@
 (() => {
 const hero = document.getElementById('hero'), cv = document.getElementById('fauna');
 if (!hero || !cv) return;
-const ctx = cv.getContext('2d'), calm = matchMedia('(prefers-reduced-motion:reduce)').matches, K = calm ? .55 : 1;
+const ctx = cv.getContext('2d'), calm = false, K = 1;
 const R = Math.random, TAU = Math.PI * 2, lerp = (a, b, t) => a + (b - a) * t, clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const INK = '#25334E';
 let W = 0, H = 0, top = 0, t0 = performance.now(), clock = 0;
 const size = () => {
-  const r = hero.getBoundingClientRect(), dpr = Math.min(2, devicePixelRatio || 1);
+  const r = hero.getBoundingClientRect(), dpr = Math.min(document.documentElement.classList.contains('lite') ? 1 : 1.5, devicePixelRatio || 1);
   W = r.width; H = r.height; top = Math.min(W, 480) * 302 / 1100;
   cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 };

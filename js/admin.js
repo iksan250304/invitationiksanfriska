@@ -6,10 +6,13 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': 
 const merge = (a, b) => { for (const k in b) a[k] = b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) ? merge(a[k] || {}, b[k]) : b[k]; return a; };
 const get = p => p.split('.').reduce((a, k) => a == null ? a : a[k], cfg);
 const set = (p, v) => { const k = p.split('.'); let o = cfg; while (k.length > 1) o = o[k.shift()]; o[k[0]] = v; };
-const toast = m => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), 2200); };
+const toast = (m, ms = 2200) => { const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.remove('on'), ms); };
 const download = (name, text, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; a.click(); setTimeout(() => URL.revokeObjectURL(a.href), 500); };
 const copy = async t => { try { await navigator.clipboard.writeText(t); } catch (_) { const x = document.createElement('textarea'); x.value = t; document.body.append(x); x.select(); document.execCommand('copy'); x.remove(); } toast('Disalin'); };
-const fail = (e, m) => { console.error(e); toast(m || e.message || 'Terjadi kesalahan'); };
+/* error tampil lengkap (pesan asli dari server) dan menetap di banner merah sampai berhasil menyimpan lagi */
+const showErr = msg => { const b = $('#errbar'); b.innerHTML = `<span>${esc(msg)}</span>${Store.diagnose ? '<button class="btn sm" id="goDiag" type="button">Tes koneksi</button>' : ''}`; b.hidden = false; };
+const clearErr = () => { $('#errbar').hidden = true; };
+const fail = (e, m) => { console.error(e); const msg = (m ? m + ': ' : '') + ((e && e.message) || 'kesalahan tidak dikenal'); toast(msg, 7000); showErr(msg); };
 
 /* ---------- state ---------- */
 let cfg = clone(DEFAULT_CONFIG), tab = 'konten', dirty = false, links = [];
@@ -81,6 +84,7 @@ const panels = {
     : card('Ucapan & doa', `<div class="row"><button class="btn ghost" data-refresh="wishes">Muat ulang</button></div>` + (cache.wishes.map(x => `<div class="item"><span><b>${esc(x.name)}</b><br>${esc(x.msg)}<br><small>${new Date(x.time).toLocaleString('id-ID')}</small></span><button class="btn sm danger" data-wd="${esc(x.id)}">Hapus</button></div>`).join('') || '<p class="empty">Belum ada ucapan.</p>')),
   setelan: () => card('Backend', `<p class="muted">Penyimpanan aktif: <b>${esc(Store.label)}</b>. Ubah di <code>js/config.js</code> (BACKEND.provider). Panduan: <code>SUPABASE_SETUP.md</code> atau <code>APPWRITE_SETUP.md</code>.</p>`)
     + card('Cadangan', `<div class="row"><button class="btn" id="bk">Unduh cadangan JSON</button><label class="btn">Pulihkan dari JSON<input id="rs" type="file" accept=".json" hidden></label></div>`)
+    + (Store.diagnose ? card('Tes koneksi', `<p class="muted">Periksa tabel, sesi login, dan hak admin di Supabase.</p><button class="btn" id="diag" type="button">Jalankan tes</button><div id="diagOut"></div>`) : '')
     + card('Reset', `<p class="muted">Kembalikan seluruh konten ke nilai default di <code>js/config.js</code>. RSVP dan ucapan tidak dihapus.</p><button class="btn danger" id="reset">Reset konten ke default</button>`)
 };
 const render = () => {
@@ -142,9 +146,20 @@ document.addEventListener('click', async e => {
       download('rsvp.csv', ['Nama,Status,Tamu,Waktu', ...cache.rsvp.map(x => [x.name, x.status, x.pax, x.time].map(q).join(','))].join('\n'), 'text/csv');
     }
     else if (t.id === 'bk') download('backup-undangan.json', JSON.stringify({ cfg, rsvp: await Store.listRsvp(), wishes: await Store.listWishes() }, null, 2), 'application/json');
+    else if (t.id === 'goDiag') { tab = 'setelan'; render(); runDiag(); }
+    else if (t.id === 'diag') runDiag();
+    else if (t.id === 'copySql') copy($('#fixSql').value);
     else if (t.id === 'reset') { if (confirm('Kembalikan semua konten ke default?')) { await Store.resetConfig(); cfg = clone(DEFAULT_CONFIG); clearDirty(); render(); toast('Direset ke default'); } }
   } catch (err) { fail(err); }
 });
+const runDiag = async () => {
+  const out = $('#diagOut'); if (!out) return; out.innerHTML = '<p class="muted">Memeriksa…</p>';
+  try {
+    const { results, fixSql } = await Store.diagnose();
+    out.innerHTML = results.map(x => `<div class="item"><span>${x.ok ? '✅' : '❌'} <b>${esc(x.label)}</b><br><small>${esc(x.detail)}</small></span></div>`).join('')
+      + (fixSql ? `<p class="muted">Tempel SQL ini di Supabase → SQL Editor → Run, lalu coba Simpan lagi:</p><textarea id="fixSql" rows="5" readonly>${esc(fixSql)}</textarea><button class="btn sm" id="copySql" type="button">Salin SQL</button>` : '');
+  } catch (e) { out.innerHTML = `<p class="muted">❌ ${esc(e.message)}</p>`; }
+};
 const restore = async (file, input) => {
   try { const d = JSON.parse(await file.text()); cfg = normalizeGift(merge(clone(DEFAULT_CONFIG), d.cfg || {}), d.cfg); await Store.saveConfig(cfg); await Store.restore(d); cache.rsvp = cache.wishes = null; clearDirty(); render(); toast('Cadangan dipulihkan'); }
   catch (e) { fail(e, 'File JSON tidak valid'); }
@@ -152,7 +167,7 @@ const restore = async (file, input) => {
 };
 $('#save').onclick = async () => {
   const b = $('#save'); b.disabled = true;
-  try { await Store.saveConfig(cfg); clearDirty(); toast('Tersimpan'); } catch (e) { fail(e, 'Gagal menyimpan'); }
+  try { await Store.saveConfig(cfg); clearDirty(); clearErr(); toast('Tersimpan di ' + Store.label); } catch (e) { fail(e, 'Gagal menyimpan'); }
   b.disabled = false;
 };
 $('#discard').onclick = async () => { { const sv = await Store.loadConfig(); cfg = normalizeGift(merge(clone(DEFAULT_CONFIG), sv), sv); } clearDirty(); render(); toast('Perubahan dibatalkan'); };

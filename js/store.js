@@ -136,13 +136,24 @@ const Store = (() => {
   const S = B.supabase || {}, SB = (S.url || '').replace(/\/$/, ''), SK = 'sb_session';
   const sbSession = () => { try { return JSON.parse(localStorage.getItem(SK)); } catch (e) { return null; } };
   const sbSetSession = j => { const x = { access_token: j.access_token, refresh_token: j.refresh_token, expires_at: Math.floor(Date.now() / 1000) + (j.expires_in || 3600) }; localStorage.setItem(SK, JSON.stringify(x)); return x; };
+  /* pesan error yang bisa ditindaklanjuti (bukan sekadar "Gagal menyimpan") */
+  const sbErr = (j, status) => {
+    const m = (j && (j.message || j.msg || j.error_description || j.hint)) || 'HTTP ' + status;
+    if ((j && j.code === '42501' && /row-level/i.test(m)) || /row-level security/i.test(m)) return 'Ditolak Supabase (RLS): akun yang login BUKAN admin menurut fungsi is_admin(). Buka tab Pengaturan, klik "Tes koneksi", lalu jalankan SQL perbaikan yang muncul.';
+    if (/permission denied/i.test(m)) return 'Supabase menolak akses (permission denied). Jalankan ulang supabase-setup.sql (bagian GRANT) di SQL Editor.';
+    if (/schema cache|does not exist/i.test(m)) return 'Tabel belum ada di Supabase. Jalankan supabase-setup.sql di SQL Editor.';
+    if (/jwt|token/i.test(m) && (status === 401 || status === 403)) return 'Sesi login habis. Klik Keluar lalu masuk lagi.';
+    return m;
+  };
   const sbFetch = async (path, { method = 'GET', body, headers = {}, auth = false, raw = false } = {}) => {
     const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 12000), h = { apikey: S.anonKey, ...headers };
     if (auth) { const t = await sbToken(); if (t) h.Authorization = 'Bearer ' + t; }
-    let r; try { r = await fetch(SB + path, { method, signal: ctl.signal, headers: h, body }); } finally { clearTimeout(tm); }
+    let r; try { r = await fetch(SB + path, { method, signal: ctl.signal, headers: h, body, cache: 'no-store' }); }
+    catch (e) { throw new Error(e.name === 'AbortError' ? 'Supabase tidak merespons (timeout). Cek koneksi, atau proyek free yang sedang di-pause.' : 'Tidak bisa menghubungi Supabase: ' + e.message); }
+    finally { clearTimeout(tm); }
     if (raw) return r;
     const txt = await r.text(), j = txt ? (() => { try { return JSON.parse(txt); } catch (e) { return {}; } })() : null;
-    if (!r.ok) throw Object.assign(new Error((j && (j.message || j.msg || j.error_description)) || 'HTTP ' + r.status), { code: r.status });
+    if (!r.ok) throw Object.assign(new Error(sbErr(j, r.status)), { code: r.status, detail: j });
     return j;
   };
   const sbJson = (method, path, data, opt = {}) => sbFetch(path, { method, body: data === undefined ? undefined : JSON.stringify(data), ...opt, headers: { 'Content-Type': 'application/json', ...(opt.headers || {}) } });
@@ -164,9 +175,14 @@ const Store = (() => {
     ready: () => !!(SB && S.anonKey),
     loadConfig: async () => {
       const r = await sbJson('GET', `/rest/v1/config?id=eq.${encodeURIComponent(S.configRowId || 'main')}&select=data`);
-      const d = r && r[0] && r[0].data; return d && typeof d === 'object' ? d : (typeof d === 'string' ? JSON.parse(d || '{}') : {});
+      let d = r && r[0] && r[0].data; d = d && typeof d === 'object' ? d : (typeof d === 'string' ? JSON.parse(d || '{}') : {}); delete d._savedAt; return d;
     },
-    saveConfig: async cfg => { await sbJson('POST', '/rest/v1/config?on_conflict=id', { id: S.configRowId || 'main', data: cfg, updated_at: new Date().toISOString() }, { auth: true, headers: { Prefer: 'resolution=merge-duplicates,return=minimal' } }); },
+    saveConfig: async cfg => {
+      if (!await sbToken()) throw new Error('Sesi login habis. Klik Keluar lalu masuk lagi.');
+      const stamp = new Date().toISOString();
+      const r = await sbJson('POST', '/rest/v1/config?on_conflict=id', { id: S.configRowId || 'main', data: { ...cfg, _savedAt: stamp }, updated_at: stamp }, { auth: true, headers: { Prefer: 'resolution=merge-duplicates,return=representation' } });
+      if (!Array.isArray(r) || !r.length) throw new Error('Supabase menjawab sukses tapi tidak ada baris yang tersimpan. Buka Pengaturan -> Tes koneksi.');
+    },
     resetConfig: async () => { await sbFetch(`/rest/v1/config?id=eq.${encodeURIComponent(S.configRowId || 'main')}`, { method: 'DELETE', auth: true }); },
     addRsvp: async r => { await sbJson('POST', '/rest/v1/rsvp', { name: r.name, status: r.status, pax: r.pax }, { headers: { Prefer: 'return=minimal' } }); },
     addWish: async w => { await sbJson('POST', '/rest/v1/wishes', { name: w.name, msg: w.msg }, { headers: { Prefer: 'return=minimal' } }); },
@@ -174,6 +190,26 @@ const Store = (() => {
     listRsvp: async () => (await sbRows('rsvp', 'select=*&order=created_at.desc&limit=500')).map(sbNorm),
     deleteRsvp: async id => { await sbFetch(`/rest/v1/rsvp?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', auth: true }); },
     deleteWish: async id => { await sbFetch(`/rest/v1/wishes?id=eq.${encodeURIComponent(id)}`, { method: 'DELETE', auth: true }); },
+    /* Tes koneksi: menunjukkan persis bagian mana yang gagal (dipakai tab Pengaturan di admin) */
+    diagnose: async () => {
+      const out = []; let fixSql = '', email = '';
+      const add = (ok, label, detail) => out.push({ ok, label, detail });
+      try { const r = await sbJson('GET', '/rest/v1/config?select=id,updated_at&limit=5'); add(true, 'Baca tabel config', r.length ? `${r.length} baris (id: ${r.map(x => x.id).join(', ')})` : 'Tabel ada tapi KOSONG: konten belum pernah tersimpan, jadi undangan memakai default.'); }
+      catch (e) { add(false, 'Baca tabel config', e.message); }
+      let tok = null; try { tok = await sbToken(); } catch (e) {}
+      if (!tok) add(false, 'Sesi admin', 'Tidak ada sesi login. Klik Keluar lalu masuk lagi.');
+      else {
+        try { const u = await sbFetch('/auth/v1/user', { auth: true }); email = (u && u.email) || ''; add(true, 'Sesi admin', 'Login sebagai ' + email); }
+        catch (e) { add(false, 'Sesi admin', e.message); }
+        try {
+          const ok = await sbJson('POST', '/rest/v1/rpc/is_admin', {}, { auth: true });
+          if (ok === true) add(true, 'Fungsi is_admin()', 'Akun ini diakui sebagai admin.');
+          else { add(false, 'Fungsi is_admin()', 'Mengembalikan FALSE: email di fungsi is_admin() tidak sama dengan email login' + (email ? ' (' + email + ')' : '') + '. Inilah penyebab simpan gagal.'); }
+          if (ok !== true && email) fixSql = `create or replace function public.is_admin() returns boolean\nlanguage sql stable as $$\n  select coalesce(auth.jwt() ->> 'email', '') = lower('${email.replace(/'/g, "''")}')\n$$;`;
+        } catch (e) { add(false, 'Fungsi is_admin()', e.message + ' (jalankan supabase-setup.sql)'); }
+      }
+      return { results: out, fixSql };
+    },
     restore: async () => {},
     upload: async (file, kind) => {
       const bucket = S.bucket || 'media', isImg = kind === 'image', blob = isImg ? await resizeImage(file) : file;

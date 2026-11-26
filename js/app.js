@@ -4,6 +4,38 @@ let animLoaded = false;
 const loadAnim = () => { if (animLoaded) return; animLoaded = true; const an = document.createElement('script'); an.src = 'js/animations.js?v=6'; document.body.append(an); };
 setTimeout(loadAnim, 4500);
 const $ = s => document.querySelector(s), $$ = s => [...document.querySelectorAll(s)];
+/* OPENING. Di HP, aset hero (~2 MB) tiba belakangan dan perangkat lemah sering patah-patah; kalau animasi jalan duluan,
+   gambar muncul tiba-tiba dan efeknya "hilang". Jadi: (1) layar penutup tipis + bilah progres selama gambar dan font dimuat,
+   (2) gambar didekode lalu dirender di belakang layar penutup (class "pre"), (3) baru animasi dimulai,
+   (4) bila animasi terukur patah-patah (<24 fps), mode ringan "lite" aktif otomatis (tanpa bayangan/blend/blur latar). */
+{
+  const hero = document.querySelector('#hero'), root = document.documentElement;
+  if (hero) {
+    if (sessionStorage.getItem('lite') === '1' || (navigator.deviceMemory && navigator.deviceMemory <= 2)) root.classList.add('lite');
+    const veil = hero.querySelector('#veil'), bar = veil && veil.querySelector('b'), logo = hero.querySelector('.logo');
+    if (veil && logo) { const l = logo.cloneNode(true); l.setAttribute('class', 'vlogo'); veil.prepend(l); }
+    const imgs = [...hero.querySelectorAll('img')]; let done = 0;
+    const tick = () => { done++; if (bar) bar.style.width = Math.round(done / (imgs.length + 1) * 100) + '%'; };
+    const wait = i => (i.complete && i.naturalWidth ? Promise.resolve() : (i.decode ? i.decode().catch(() => {}) : new Promise(r => { i.onload = i.onerror = r; }))).then(tick);
+    const jobs = imgs.map(wait); jobs.push((document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(tick));
+    const watchdog = new Promise(r => setTimeout(r, 7000));
+    Promise.race([Promise.all(jobs), watchdog]).then(() => new Promise(r => setTimeout(r, 450))).then(() => {
+      hero.classList.remove('pre'); hero.classList.add('p1');
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        hero.classList.add('p2'); const t0 = performance.now(), dts = []; let last = t0;
+        /* ukur 1,0-4,0 dtk setelah mulai (1 dtk pertama dilewati: upload tekstur awal wajar lambat); median > 42 ms (< 24 fps) = perangkat lemah */
+        const probe = ts => { if (ts - t0 > 1000) dts.push(ts - last); last = ts;
+          if (ts - t0 < 4000) return requestAnimationFrame(probe);
+          const s = dts.sort((x, y) => x - y), med = s[s.length >> 1] || 0;
+          if (med > 42 && !root.classList.contains('lite')) { root.classList.add('lite'); try { sessionStorage.setItem('lite', '1'); } catch (e) {} } };
+        requestAnimationFrame(probe);
+      }));
+      const t3 = setTimeout(() => hero.classList.add('p3'), 7000);
+      hero.addEventListener('dblclick', () => { clearTimeout(t3); hero.classList.add('skip', 'p2', 'p3'); }, { once: true });   /* klik dua kali = lewati opening */
+    });
+    if (/[?&]debug\b/.test(location.search)) { const s = document.createElement('script'); s.src = 'js/debug.js?v=13'; document.body.append(s); }
+  }
+}
 const get = (o, p) => p.split('.').reduce((a, k) => a == null ? a : a[k], o);
 const merge = (a, b) => { for (const k in b) a[k] = b[k] && typeof b[k] === 'object' && !Array.isArray(b[k]) ? merge(a[k] || {}, b[k]) : b[k]; return a; };
 const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
@@ -95,7 +127,7 @@ if (mSrc.t === 'youtube') {
 }
 mb.onclick = () => player.playing ? player.pause() : player.play();
 $('#open').onclick = () => {
-  const hero = $('#hero'), reduce = matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const hero = $('#hero'), reduce = false; /* animasi selalu penuh */
   $('#open').disabled = true; player.play(); hero.classList.add('opening');
   $('#arrow').classList.add('on'); $('#ctl').classList.add('on');
   /* zoom-in + blur berjalan; scroll mulai di tengah efek supaya mulus tanpa patah */

@@ -3,14 +3,7 @@
   const qsa = (sel) => Array.from(document.querySelectorAll(sel));
   const rand = Math.random;
 
-  // 1. Opening sinematik: p1 = kamera dekat, p2 = mundur + bunga tumbuh + kabut + judul, p3 = tombol undangan
-  const hero = qs('#hero');
-  if (hero) {
-    hero.classList.add('p1');
-    requestAnimationFrame(() => requestAnimationFrame(() => hero.classList.add('p2')));
-    const t3 = setTimeout(() => hero.classList.add('p3'), 7000);
-    hero.addEventListener('pointerdown', () => { clearTimeout(t3); hero.classList.add('skip', 'p2', 'p3'); }, { once: true });
-  }
+  // 1. Opening sinematik: dimulai dari app.js setelah gambar hero + font siap (lihat bagian "opening" di app.js)
 
   // 2. Partikel Kelopak Bunga Jatuh
   const petalBox = qs('#petals');

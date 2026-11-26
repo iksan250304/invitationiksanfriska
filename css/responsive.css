@@ -1,0 +1,58 @@
+/* ===== RESPONSIVE: opening muat di semua tinggi layar, tombol presisi di HP, tablet, dan PC ===== */
+
+/* hero selalu pas satu layar (tidak lagi memaksa min-height 620px yang membuat tombol keluar layar saat landscape) */
+#hero{--curh:min(calc(min(100vw,480px)*302/1100),17svh);min-height:0;height:100vh;height:100svh}
+.curtain{width:100%;height:var(--curh);object-fit:cover;object-position:50% 100%}
+#hero .lamp{top:calc(var(--curh) - 18px);width:min(44px,6svh)}
+
+/* layar pendek (laptop kecil, HP landscape dengan bilah browser) */
+@media (max-height:720px){
+  .logo{width:40px}.wedof{font-size:.8rem}
+  .hero-text>h1.names{font-size:min(2.9rem,7svh)}
+  .date{font-size:1.25rem}
+  .guest{padding-bottom:min(calc(min(100vw,480px)*.2),9svh)}.guest h2{font-size:1.5rem;margin:2px 0 10px}
+}
+@media (max-height:560px){
+  .logo{display:none}.hero-text{gap:3px}
+  .wedof{font-size:.7rem;letter-spacing:.22em}
+  .hero-text>h1.names{flex-direction:row;gap:.28em;align-items:baseline;font-size:min(2.2rem,8svh)}
+  .names .amp{font-size:.6em}.date{font-size:1rem}
+  .guest{padding-bottom:6px}.guest p{font-size:.8rem;line-height:1.3;margin:0}.guest h2{font-size:1.15rem;margin:2px 0 6px}
+  .ly.c{display:none}
+  #open{padding:8px 22px;font-size:13px;min-height:36px}
+  #ctl{bottom:calc(56px + env(safe-area-inset-bottom,0px));gap:6px}#ctl button,#arrow{width:38px;height:38px;min-width:0;min-height:0}#arrow{bottom:12px}
+}
+
+/* tombol: ukuran sentuh 44px, teks tepat di tengah, tidak bergeser saat di-hover (hit area stabil, tidak berkedip di tepi bawah) */
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:42px;line-height:1.1;text-align:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;user-select:none}
+.btn::after{pointer-events:none}
+.btn:hover,.btn.light:hover{translate:none}
+.btn:active{translate:none;scale:.97}
+.banks .btn{min-height:36px}
+#ctl button,#arrow{width:44px;height:44px;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+#ctl{bottom:calc(72px + env(safe-area-inset-bottom,0px))}
+#arrow{bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+
+/* layar sangat sempit */
+@media (max-width:340px){.hero-text{padding-left:14px;padding-right:14px}.guest h2{font-size:1.5rem}}
+
+/* ===== layar penutup saat memuat + pra-render (animasi baru mulai setelah gambar siap) ===== */
+#veil{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;background:linear-gradient(var(--blue-mist),var(--blue-powder));transition:opacity .8s ease,visibility 0s linear .8s}
+#veil .vlogo{width:min(16vw,62px);height:auto;color:var(--gold);opacity:1;translate:none;animation:vPulse 1.6s ease-in-out infinite alternate}
+.vbar{display:block;width:min(46vw,170px);height:3px;border-radius:3px;background:#af874133;overflow:hidden}
+.vbar b{display:block;height:100%;width:6%;background:var(--gold);border-radius:3px;transition:width .35s ease}
+@keyframes vPulse{from{opacity:.55;scale:.96}to{opacity:1;scale:1}}
+#hero:not(.pre) #veil{opacity:0;visibility:hidden;pointer-events:none}
+/* selama "pre": bunga diberi opacity hampir 0 (bukan 0) agar tekstur sudah dirender sebelum animasi; tanpa ini frame pertama patah */
+#hero.pre .fl,#hero.pre .ly{opacity:.01!important;transition:none!important}
+
+/* mode ringan (otomatis di perangkat yang patah-patah): tanpa bayangan, blend, blur latar. Tampilan tetap, gerak tetap. */
+#hero .fl,#hero .ly{filter:none}
+html.lite #hero .curtain,html.lite #hero .lamp,html.lite .crown,html.lite .so{filter:none!important}
+html.lite .lay{mix-blend-mode:normal!important}
+html.lite .btn,html.lite #ctl button,html.lite #arrow{-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.lite .btn{background:linear-gradient(135deg,#fffffff0,#ffffffb8)!important}
+html.lite #ctl button,html.lite #arrow{background:#25334ee6!important}
+html.lite #hero.opening .hero-text{filter:none!important}
+html.lite .btn::after,html.lite .mist{animation:none!important}
+.flora .fl{opacity:.01}
