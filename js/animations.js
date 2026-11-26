@@ -8,7 +8,7 @@
   // 2. Partikel Kelopak Bunga Jatuh
   const petalBox = qs('#petals');
   if (petalBox) {
-    for (let i = 0; i < 18; i++) {
+    for (let i = 0, N = document.documentElement.classList.contains('ios') ? 8 : 18; i < N; i++) {
       const p = document.createElement('div');
       p.className = 'petal';
       const x = (rand() * 100).toFixed(1);

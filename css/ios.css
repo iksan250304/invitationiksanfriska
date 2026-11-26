@@ -1,0 +1,31 @@
+/* ===== Profil iOS (Safari + Chrome iOS = WebKit): kurangi layer GPU, blur, blend, dan raster skala besar =====
+   Penyebab konten hilang/glitch di iPhone: terlalu banyak layer besar ber-will-change + filter blur + mix-blend + scale(2x) -> memori GPU habis, layer dibuang. */
+html.ios #hero *,html.ios #hero{will-change:auto!important}
+html.ios #hero .stage,html.ios #hero .hero-text,html.ios #hero .flora,html.ios #hero .lilies,html.ios #hero .curtain,html.ios #hero .lamp,html.ios #hero .songket,html.ios #hero #fauna,html.ios #hero .haze{transition-property:transform,opacity,translate,scale}
+/* kamera opening: skala kecil (raster lebih ringan), tanpa blur */
+html.ios #hero:not(.p2):not(.p3):not(.skip) .stage{transform:scale(1.4) translate(-6%,-2%)}
+html.ios #hero.opening .stage{transform:scale(1.3) translate(0,3%);filter:none!important;opacity:0}
+html.ios #hero.opening .flora,html.ios #hero.opening .lilies{transform:scale(1.25);filter:none!important;opacity:0}
+html.ios #hero.opening .hero-text{transform:scale(1.15);filter:none!important;opacity:0}
+html.ios #hero.opening .curtain,html.ios #hero.opening .lamp,html.ios #hero.opening .songket,html.ios #hero.opening #fauna,html.ios #hero.opening .haze{filter:none!important;opacity:0}
+/* pengganti blur: kabut krem menutup lembut (opacity saja) */
+#hero::after{content:'';position:absolute;inset:0;z-index:25;pointer-events:none;opacity:0;background:radial-gradient(circle at 50% 55%,#F4EEE2f0,#F4EEE2)}
+html.ios #hero{transition:none}
+html.ios #hero.opening::after{opacity:1;transition:opacity 1.1s ease .35s}
+html.ios #ayat.arrive .card{animation-name:arriveSoft}
+@keyframes arriveSoft{from{scale:.94;opacity:.2}to{scale:1;opacity:1}}
+html.ios .n,html.ios .amp{filter:none;transition:opacity 1.5s ease,transform 1.7s var(--ease)}
+/* latar: tanpa blend, tanpa mask di parent, tanpa blur kabut */
+html.ios .lay,html.ios #bg img{mix-blend-mode:normal!important}
+html.ios .scene{-webkit-mask-image:none;mask-image:none}
+html.ios .lay{-webkit-mask-image:linear-gradient(transparent,#000 24%);mask-image:linear-gradient(transparent,#000 24%)}
+html.ios .mist{filter:none}
+html.ios #bg img{width:150%}
+html.ios .bgl,html.ios .bgr{animation:none}
+/* kelopak: 2D saja (tanpa rotateX/Y 3D) */
+html.ios .petal{will-change:auto}
+html.ios .petal i{animation-name:swayFlat}
+@keyframes swayFlat{0%,100%{transform:translateX(calc(var(--sw)*-1)) rotate(0)}50%{transform:translateX(var(--sw)) rotate(100deg)}}
+/* iOS: cegah zoom ganda dan kilau tap */
+html.ios{-webkit-text-size-adjust:100%;-webkit-tap-highlight-color:transparent}
+html.ios.locked,html.ios.locked body{overscroll-behavior:none;touch-action:none}
